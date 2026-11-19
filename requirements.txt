@@ -1,0 +1,3 @@
+# The game, AI and GUI use only the Python standard library (Tkinter comes with Python).
+# Charts need matplotlib:
+matplotlib
