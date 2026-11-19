@@ -1,0 +1,5 @@
+agent,games,avg_score,std_score,avg_highest_tile,pct_reached_2048,avg_moves,avg_decision_ms,avg_nodes_per_move
+Random,100,1073.12,568.958,104.96,0.0,116.25,0.007,0.0
+Expectimax-d1,100,12316.36,6020.561,883.2,10.0,750.02,0.222,44.01
+Expectimax-d2,20,25678,9728.967,1766.4,65.0,1365.6,5.183,1109.705
+Expectimax-d3,2,44526,7522.0,3072,100.0,2167.5,80.927,17466.273

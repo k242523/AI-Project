@@ -1,0 +1,26 @@
+{
+  "default": {
+    "empty": 2.7,
+    "smoothness": 0.1,
+    "monotonicity": 1.0,
+    "corner": 1.0
+  },
+  "best": {
+    "empty": 1.9672,
+    "smoothness": 0.1596,
+    "monotonicity": 0.2661,
+    "corner": 0.8992
+  },
+  "validation": {
+    "depth1": {
+      "games": 15,
+      "default": 5677.6,
+      "best": 15289.333333333334
+    },
+    "depth2": {
+      "games": 5,
+      "default": 23140,
+      "best": 26567.2
+    }
+  }
+}

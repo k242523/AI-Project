@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Milestone 1 Guide: 2048 Engine</title>
+<style>
+:root{--bg:#fff;--fg:#2b2d31;--mut:#6b6f76;--line:#d9dbe0;--card:#f4f5f7;--acc:#3a3d44;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1e1f22;--fg:#e4e5e8;--mut:#9b9fa7;--line:#3a3c41;--card:#2a2b2f;--acc:#c9ccd2;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#1e1f22;--fg:#e4e5e8;--mut:#9b9fa7;--line:#3a3c41;--card:#2a2b2f;--acc:#c9ccd2;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{background:var(--bg);color:var(--fg);font:16px/1.6 Georgia,"Times New Roman",serif;margin:0 auto;max-width:760px;padding:24px 18px 48px}
+h1{font-size:26px;margin:0 0 4px}h2{font-size:19px;margin:36px 0 8px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+.sub{color:var(--mut);font-size:14px;margin:0 0 20px}
+table{border-collapse:collapse;width:100%;font-size:14px;margin:12px 0}th,td{border:1px solid var(--line);padding:7px 9px;text-align:left;vertical-align:top}th{background:var(--card)}
+code,pre{font-family:Consolas,Menlo,monospace;font-size:13px}pre{background:var(--card);border:1px solid var(--line);padding:12px;overflow-x:auto;border-radius:4px}
+.box{background:var(--card);border-left:3px solid var(--acc);padding:10px 14px;margin:14px 0;font-size:15px}
+.scroll{overflow-x:auto}svg{max-width:100%;height:auto;display:block;margin:12px auto}
+svg text{fill:var(--fg);font-family:Georgia,serif}svg .b{fill:var(--card);stroke:var(--acc);stroke-width:1.2}svg .l{stroke:var(--acc);stroke-width:1.2;fill:none}svg .m{fill:var(--mut)}
+</style></head><body>
+<h1>Milestone 1 Guide: the 2048 Engine</h1>
+<p class="sub">AL-2002 AI Lab, Fall 2026 · Shuzain Ali (24K-2523) · Parts 2 and 3: testing and how it works</p>
+
+<h2>Part 2. Test that the engine works</h2>
+<p>Run these two commands from the <code>AI-Project</code> folder.</p>
+<table><tr><th>Step</th><th>Command</th><th>What you should see</th></tr>
+<tr><td>1</td><td><code>python -m unittest discover tests</code></td><td><code>Ran 21 tests ... OK</code></td></tr>
+<tr><td>2</td><td><code>python play_cli.py</code></td><td>A board. Type <code>w a s d</code> to move, <code>r</code> to restart, <code>q</code> to quit.</td></tr></table>
+<p><b>Result of my run:</b> all 21 tests passed, and a scripted session (left, up, right, down, quit) ran without errors.</p>
+<table><tr><th>Test group</th><th>Count</th><th>What it proves</th></tr>
+<tr><td>Row sliding</td><td>1 (8 cases)</td><td>Gaps removed, equal tiles merge once, correct score</td></tr>
+<tr><td>Board moves</td><td>7</td><td>All 4 directions correct, input board never changed, bad direction rejected</td></tr>
+<tr><td>Game rules</td><td>13</td><td>Seeds repeat, illegal moves do nothing, score adds up, game over is detected, 90/10 tile odds, 20 full random games stay valid</td></tr></table>
+
+<h2>Part 3. How the engine works</h2>
+<h3 style="font-size:16px">3.1 The board and the score</h3>
+<p>The board is a 4×4 list of numbers, and <code>0</code> means an empty cell. The score goes up by the value of every tile created by a merge.</p>
+
+<h3 style="font-size:16px">3.2 Sliding one row (the core idea)</h3>
+<p>Every move is built from one small function, <code>slide_row_left</code>. Example row <code>[2, 0, 2, 4]</code> moved left:</p>
+<div class="scroll"><svg viewBox="0 0 660 150" width="660" role="img" aria-label="Row [2,0,2,4] becomes [2,2,4], then [4,4], then [4,4,0,0]">
+<g font-size="14" text-anchor="middle">
+<rect class="b" x="10" y="30" width="140" height="44" rx="4"/><text x="80" y="58">[2, 0, 2, 4]</text><text class="m" x="80" y="20" font-size="12">Start</text>
+<rect class="b" x="180" y="30" width="140" height="44" rx="4"/><text x="250" y="58">[2, 2, 4]</text><text class="m" x="250" y="20" font-size="12">1. Remove gaps</text>
+<rect class="b" x="350" y="30" width="140" height="44" rx="4"/><text x="420" y="58">[4, 4]</text><text class="m" x="420" y="20" font-size="12">2. Merge once (+4)</text>
+<rect class="b" x="520" y="30" width="130" height="44" rx="4"/><text x="585" y="58">[4, 4, 0, 0]</text><text class="m" x="585" y="20" font-size="12">3. Pad with zeros</text>
+<path class="l" d="M150 52h30M320 52h30M490 52h30"/>
+<text class="m" x="330" y="120" font-size="13">Each tile merges at most once per move: [2,2,2,2] gives [4,4,0,0], score +8.</text></g></svg></div>
+
+<h3 style="font-size:16px">3.3 The other three directions reuse the same function</h3>
+<table><tr><th>Direction</th><th>Trick</th></tr>
+<tr><td>Left</td><td>Slide each row as is</td></tr>
+<tr><td>Right</td><td>Reverse each row, slide left, reverse back</td></tr>
+<tr><td>Up</td><td>Transpose (rows become columns), slide left, transpose back</td></tr>
+<tr><td>Down</td><td>Transpose, reverse, slide left, reverse, transpose back</td></tr></table>
+<p>Worked example, <code>move_board(board, LEFT)</code> on the first row <code>[2,0,2,4]</code> returns the row <code>[4,4,0,0]</code> and score gain <code>4</code>, as checked in the run above.</p>
+
+<h3 style="font-size:16px">3.4 What happens on one call to <code>game.move(direction)</code></h3>
+<div class="scroll"><svg viewBox="0 0 660 330" width="660" role="img" aria-label="Flow of one move">
+<defs><marker id="a" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L8 4L0 8z" fill="#8a8e96"/></marker></defs>
+<g font-size="14" text-anchor="middle">
+<rect class="b" x="215" y="8" width="230" height="40" rx="4"/><text x="330" y="33">move(direction)</text>
+<rect class="b" x="215" y="78" width="230" height="40" rx="4"/><text x="330" y="103">Slide and merge with move_board</text>
+<polygon class="b" points="330,138 440,172 330,206 220,172"/><text x="330" y="177">Did the board change?</text>
+<rect class="b" x="480" y="152" width="170" height="40" rx="4"/><text x="565" y="177">Return False, do nothing</text>
+<rect class="b" x="215" y="226" width="230" height="40" rx="4"/><text x="330" y="251">Add score, spawn a 2 or 4</text>
+<rect class="b" x="215" y="288" width="230" height="38" rx="4"/><text x="330" y="312">Update highest tile and game over, return True</text>
+<path class="l" marker-end="url(#a)" d="M330 48v30M330 118v20M440 172h40M330 206v20M330 266v22"/>
+<text class="m" x="460" y="164" font-size="12">No</text><text class="m" x="345" y="220" font-size="12" text-anchor="start">Yes</text></g></svg></div>
+
+<h3 style="font-size:16px">3.5 Random tiles, seeds, and game over</h3>
+<table><tr><th>Idea</th><th>In plain words</th></tr>
+<tr><td>New tile</td><td>After a valid move, a 2 (90%) or a 4 (10%) appears in a random empty cell.</td></tr>
+<tr><td>Seed</td><td><code>Game2048(seed=2048)</code> fixes the randomness, so the same moves give the same game. This lets us compare agents fairly in Milestone 4.</td></tr>
+<tr><td>Game over</td><td>None of the four directions changes the board. A full board with a possible merge is not over.</td></tr></table>
+<pre>game = Game2048(seed=2048)
+game.move(LEFT)             # True if legal
+game.get_legal_moves()      # e.g. ['up', 'down', 'left', 'right']
+game.get_state()            # board copy, score, game_over, highest_tile</pre>
+
+<div class="box"><b>Why <code>move_board</code> is separate:</b> it changes nothing and spawns no tile. In Milestone 2, Expectimax will call it to try moves safely, then add its own chance nodes for the random tile.</div>
+</body></html>
